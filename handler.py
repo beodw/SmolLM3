@@ -29,7 +29,7 @@ def init_pipeline():
     
     # RunPod requires an integer for device
     device_id = 0 if torch.cuda.is_available() else -1
-    
+    return
     pipe = pipeline(
         "text-generation", 
         model=model_dir, 
