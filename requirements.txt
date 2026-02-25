@@ -1,7 +1,7 @@
 fastapi
 uvicorn[standard]
 runpod
-transformers>=4.38.0
+transformers
 accelerate
 torch
 sentencepiece
