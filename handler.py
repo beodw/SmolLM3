@@ -65,7 +65,7 @@ def handler(job):
         }}
         """}
     ]
-
+    return {"output":"success"}
     while attempts < max_retries:
         try:
             result = pipe(messages, max_new_tokens=600, temperature=0.2, do_sample=True)
