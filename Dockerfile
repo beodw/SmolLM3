@@ -1,5 +1,5 @@
 # Use RunPod's optimized PyTorch base
-FROM runpod/pytorch:2.4.0-py3.10-cuda12.4.1-devel-ubuntu22.04
+FROM runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
 
 # 1. Install system dependencies
 # git is needed if any requirements are git-based; build-essential for speed optimizations
