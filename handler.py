@@ -17,7 +17,7 @@ pipe = None
 
 def download_models():
     cache_dir = os.environ.get("HF_HOME", "/tmp")
-    model_dir = os.path.join(cache_dir, "heartmula_models")
+    model_dir = os.path.join(cache_dir, "SmolLM3")
     if not os.path.exists(model_dir):
         os.makedirs(model_dir, exist_ok=True)
 
