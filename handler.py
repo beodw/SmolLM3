@@ -41,6 +41,7 @@ def init_pipeline():
     print("✅ Pipeline Initialized")
 
 def handler(job):
+    return {"output":"success"}
     job_input = job["input"]
     user_prompt = job_input.get("prompt", "A smooth r&b song")
     max_retries = 3
@@ -65,7 +66,7 @@ def handler(job):
         }}
         """}
     ]
-    return {"output":"success"}
+    
     while attempts < max_retries:
         try:
             result = pipe(messages, max_new_tokens=600, temperature=0.2, do_sample=True)
