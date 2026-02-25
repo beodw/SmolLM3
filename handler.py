@@ -3,22 +3,41 @@ import re
 import json
 import torch
 import runpod
+from huggingface_hub import hf_hub_download, snapshot_download
 from transformers import pipeline, AutoTokenizer
+
+
+HF_TOKEN = os.environ.get("HF_TOKEN")
 
 # --- INITIALIZATION ---
 # Using SmolLM3-3B with bfloat16 for speed and memory efficiency
 model_id = "HuggingFaceTB/SmolLM3-3B"
-device = 0 if torch.cuda.is_available() else -1
 
-tokenizer = AutoTokenizer.from_pretrained(model_id)
-pipe = pipeline(
+pipe = None
+
+def download_models():
+    cache_dir = os.environ.get("HF_HOME", "/tmp")
+    model_dir = os.path.join(cache_dir, "heartmula_models")
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir, exist_ok=True)
+
+    snapshot_download(repo_id=model_id, local_dir=model_dir, token=HF_TOKEN)
+    return model_dir
+
+def init_pipeline():
+    global pipe
+    model_dir = download_models()
+    device = 0 if torch.cuda.is_available() else -1
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    pipe = pipeline(
     "text-generation", 
-    model=model_id, 
+    model=model_dir, 
     tokenizer=tokenizer, 
     device=device,
     torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32
 )
 
+    print("✅ Pipeline Initialized")
 def handler(job):
     job_input = job["input"]
     user_prompt = job_input.get("prompt", "A smooth r&b song")
@@ -105,6 +124,8 @@ def handler(job):
         "error": "Failed to generate valid structure after 3 attempts.",
         "raw_fallback": raw_content[:200] if 'raw_content' in locals() else "No output"
     }
+
+init_pipeline()
 
 # Start RunPod serverless
 runpod.serverless.start({"handler": handler})
