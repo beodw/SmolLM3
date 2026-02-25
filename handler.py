@@ -88,11 +88,12 @@ def handler(job):
             
             if match:
                 clean_json = match.group(0)
-                data = json.loads(clean_json)
+                return {"output":clean_json}
+                # data = json.loads(clean_json)
                 
-                # Verify the model didn't hallucinate the keys
-                if all(k in data for k in ["title", "tags", "lyrics"]):
-                    return data # Immediate exit on success
+                # # Verify the model didn't hallucinate the keys
+                # if all(k in data for k in ["title", "tags", "lyrics"]):
+                #     return data # Immediate exit on success
             
         except Exception as e:
             print(f"Attempt {attempts+1} failed to parse JSON. Error: {e}")
