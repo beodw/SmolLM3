@@ -29,7 +29,7 @@ def init_pipeline():
     model_dir = download_models()
     # Load tokenizer from the LOCAL directory to avoid network/auth issues here
     tokenizer = AutoTokenizer.from_pretrained(model_id)
-    return
+    
     # RunPod requires an integer for device
     device_id = 0 if torch.cuda.is_available() else -1
     
