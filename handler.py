@@ -10,26 +10,26 @@ HF_TOKEN = os.environ.get("HF_TOKEN")
 model_id = "HuggingFaceTB/SmolLM3-3B"
 pipe = None
 
-def download_models():
-    # Using a clean path in /tmp
-    model_dir = os.path.join("/tmp", "SmolLM3")
-    if not os.path.exists(model_dir):
-        os.makedirs(model_dir, exist_ok=True)
+# def download_models():
+#     # Using a clean path in /tmp
+#     model_dir = os.path.join("/tmp", "SmolLM3")
+#     if not os.path.exists(model_dir):
+#         os.makedirs(model_dir, exist_ok=True)
 
-    # Download everything to local_dir
-    snapshot_download(repo_id=model_id, local_dir=model_dir, token=HF_TOKEN)
-    return model_dir
+#     # Download everything to local_dir
+#     snapshot_download(repo_id=model_id, local_dir=model_dir, token=HF_TOKEN)
+#     return model_dir
 
 def init_pipeline():
-    global pipe
+    # global pipe
     # model_dir = download_models()
-    
+    return
     # Load tokenizer from the LOCAL directory to avoid network/auth issues here
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     
     # RunPod requires an integer for device
     device_id = 0 if torch.cuda.is_available() else -1
-    return
+
     pipe = pipeline(
         "text-generation", 
         model=model_dir, 
