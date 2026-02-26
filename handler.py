@@ -3,7 +3,7 @@ import re
 import json
 import torch
 import runpod
-from huggingface_hub import snapshot_download
+from huggingface_hub import hf_hub_download, snapshot_download
 from transformers import pipeline, AutoTokenizer
 
 HF_TOKEN = os.environ.get("HF_TOKEN")
@@ -12,10 +12,14 @@ pipe = None
 
 def download_models():
     # Using a clean path in /tmp
-    model_dir = os.path.join("/workspace", "SmolLM3")
+    cache_dir = os.environ.get("HF_HOME", "/tmp")
+    model_dir = os.path.join(cache_dir, "SmolLM3")
     if not os.path.exists(model_dir):
         os.makedirs(model_dir, exist_ok=True)
 
+    # Use their staggered download strategy
+    for filename in ["config.json", "tokenizer.json", "tokenizer_config.json"]:
+        hf_hub_download(repo_id=model_id, filename=filename, local_dir=model_dir, token=HF_TOKEN)
     # Download everything to local_dir
     snapshot_download(repo_id=model_id, local_dir=model_dir, token=HF_TOKEN)
     return model_dir
