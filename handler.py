@@ -25,14 +25,14 @@ def download_models():
     return model_dir
 
 def init_pipeline():
-    # global pipe
+    global pipe
     model_dir = download_models()
     # Load tokenizer from the LOCAL directory to avoid network/auth issues here
-    # tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
     
     # RunPod requires an integer for device
     device_id = 0 if torch.cuda.is_available() else -1
-    return
+    
     pipe = pipeline(
         "text-generation", 
         model=model_dir, 
@@ -44,7 +44,6 @@ def init_pipeline():
     print("✅ Pipeline Initialized")
 
 def handler(job):
-    return {"output":"success"}
     job_input = job["input"]
     user_prompt = job_input.get("prompt", "A smooth r&b song")
     max_retries = 3
