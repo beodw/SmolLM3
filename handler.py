@@ -1,3 +1,4 @@
+import gc
 import os
 import re
 import json
@@ -41,8 +42,13 @@ def init_pipeline():
         torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
     )
     print("✅ Pipeline Initialized")
+def cleanup():
+    torch.cuda.empty_cache() 
+    torch.cuda.ipc_collect()
+    gc.collect()
 
 def handler(job):
+    cleanup()
     job_input = job["input"]
     user_prompt = job_input.get("prompt", "A smooth r&b song")
     max_retries = 3
@@ -50,6 +56,7 @@ def handler(job):
 
 
     messages = [
+        {"role": "system", "content": "/no_think"},
         {"role": "user", "content": 
             f"""Generate ONLY a raw JSON object for the song idea: {user_prompt}
 
@@ -82,13 +89,15 @@ def handler(job):
             match = re.search(r"{.*\}", raw_content, re.DOTALL)
             if match:
                 output = json.loads(match.group(0))  # Validate JSON
+                cleanup()
                 return {"refresh_worker": True, "output": output}
             
         except Exception as e:
             print(f"Attempt {attempts+1} failed: {e}")
         
         attempts += 1
-
+        
+    cleanup()
     return {"refresh_worker": True,"error": "Failed to generate JSON", "raw": raw_content[:100] if 'raw_content' in locals() else ""}
 
 # Initialize before starting the serverless loop
