@@ -63,26 +63,13 @@ def handler(job):
                   4. No punctuation.
                   5. Each line in the lyrics MUST rhyme with another one
                   
-
-        Format your response like this:
-            Example Format:
-            {{
-                "title": "My Ex Lover",
-                "tags": "male voice, pop, melancholic, 90 BPM",
-                "lyrics": "[intro-short]\noohhhhh...\n[verse]\nBaby, I miss you...\n[chorus]\nPlease come back...\n[verse]\n Baby, I need you...\n[outro]\nCome back..."
-            }}
-
         You may decide to add a third verse.
-        It is at your discretion.
         However, the song must have at least 2 verses and an outro.
         You do not have to mention anything around baby, love or missing someone. My example was simple to show structure and not the idea of the song lyrics you write.
 
         REMEMBER .json DOES NOT SUPPORT MULTI LINE STRING SO YOUR LYRICS AND TAGS NEED TO USE THE ESCAPE SEQUENCE \n FOR NEW LINES!
-        REMEMBER .json DOES NOT SUPPORT MULTI LINE STRING SO YOUR LYRICS AND TAGS NEED TO USE THE ESCAPE SEQUENCE \n FOR NEW LINES!
-        REMEMBER .json DOES NOT SUPPORT MULTI LINE STRING SO YOUR LYRICS AND TAGS NEED TO USE THE ESCAPE SEQUENCE \n FOR NEW LINES!
 
-        To drive the point home that the song maye have varying structure and that it is at your discretion. Verse can have more than 1 lines. Here is another example.
-         Another Example Format:
+        Example Format:
             {{
                 "title": "Silent",
                 "tags": "female voice, r&b, dreamy, 95 BPM",
@@ -93,14 +80,14 @@ def handler(job):
 
         {user_prompt}.
 
-        Give me the output.
-        """
+        Give me the json.\n
+        """+"{"
         },
     ]
     
     while attempts < max_retries:
         try:
-            result = pipe(messages, max_new_tokens=600, temperature=0.2, do_sample=True)
+            result = pipe(messages, max_new_tokens=600, temperature=0.1, do_sample=True)
             raw_content = result[0]["generated_text"][-1]["content"]
 
             # Non-greedy regex to catch the first JSON block
