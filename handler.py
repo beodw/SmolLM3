@@ -94,14 +94,14 @@ def handler(job):
             match = re.search(r'\{.*?\}', raw_content, re.DOTALL)
             if match:
                 output = json.loads(match.group(0))  # Validate JSON
-                return {"output": output}
+                return {"refresh_worker": True, "output": output}
             
         except Exception as e:
             print(f"Attempt {attempts+1} failed: {e}")
         
         attempts += 1
 
-    return {"error": "Failed to generate JSON", "raw": raw_content[:100] if 'raw_content' in locals() else ""}
+    return {"refresh_worker": True,"error": "Failed to generate JSON", "raw": raw_content[:100] if 'raw_content' in locals() else ""}
 
 # Initialize before starting the serverless loop
 init_pipeline()
