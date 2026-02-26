@@ -56,14 +56,14 @@ def handler(job):
                 Rules:
                 1. Every line in "lyrics" MUST end with '...' (three dots).
                 2. Use \\n for new lines.
-                3. Include "title", "tags", and "lyrics".
+                3. Include "title", "tags", and "lyrics". The title must be no more than 2 words.
                 4. Output ONLY the JSON. No markdown. No backticks.
 
                 Example Structure:
                 {{
                     "title": "Short Title",
-                    "tags": "style, mood, BPM",
-                    "lyrics": "[intro-medium]\\nLine one...\\nLine two...\\n[verse]\\nLine three...\\n[chorus]\\nLine four...\\n[outro-short]"
+                    "tags": "female voice, style, mood, BPM",
+                    "lyrics": "[intro-short]\\nThe sun is high...\\nThe wind is dry...\\n[verse]\\nWalking through the golden heat...\\nDust beneath my weary feet...\\n[chorus]\\nOh the desert calls my name...\\nNothing ever stays the same...\\n[outro-short]"
                 }}
 
                 JSON Output:
