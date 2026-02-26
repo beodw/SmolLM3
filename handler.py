@@ -50,39 +50,27 @@ def handler(job):
 
 
     messages = [
-        {"role": "system", "content": "/no_think.You are a rigid API response generator. Output ONLY a raw JSON object. Do not include introductory text, explanations, or markdown code blocks."},
-        {"role": "user", "content":f"""
-        
-        Your task is to transform a user's creative idea into 3 specific components: 
-              1. A title. This is just 1 - 2 word string that is relevant to the user's song idea.
-              2. A set of tags which are a single line of natural language tags. Include genre, mood, instrumentation, and tempo.
-              3. A structured set of lyrics which include the following strict rules:
-                  1. Use square brackets for sections: [intro-medium], [verse], [chorus], [inst-short].
-                  2. Each line in the lyrics must be short, only a few syllables, followed by '...'. EVERY LINE OF LYRICS YOU WRITE MUST HAVE '...' before the new line character \n !
-                  3. Each line should sound like song lyrics relevant to the user's idea. Do not put song descriptions here but actual lyrics that can be sang.
-                  4. No punctuation.
-                  5. Each line in the lyrics MUST rhyme with another one
-                  
-        You may decide to add a third verse.
-        However, the song must have at least 2 verses and an outro.
-        You do not have to mention anything around baby, love or missing someone. My example was simple to show structure and not the idea of the song lyrics you write.
+        {"role": "user", "content": 
+            f"""Generate ONLY a raw JSON object for the song idea: {user_prompt}
 
-        REMEMBER .json DOES NOT SUPPORT MULTI LINE STRING SO YOUR LYRICS AND TAGS NEED TO USE THE ESCAPE SEQUENCE \n FOR NEW LINES!
+                Rules:
+                1. Every line in "lyrics" MUST end with '...' (three dots).
+                2. Use \\n for new lines.
+                3. Include "title", "tags", and "lyrics".
+                4. Output ONLY the JSON. No markdown. No backticks.
 
-        Example Format:
-            {{
-                "title": "Silent",
-                "tags": "female voice, r&b, dreamy, 95 BPM",
-                "lyrics": "[intro-medium]\n\n[verse]\nCold...\nRain...\nFalls...\nDown...\nWait...\nFor...\nThe...\nLight...\n\n[chorus]\nStay...\nWith...\nMe...\nJust...\nHold...\nThe...\nSilent...\nSea...\n\n[inst-short]\n\n[verse]\nTime...\nMoves...\nSlow...\nWhere...\nDo...\nWe...\nGo...\nNow...\n\n[chorus]\nStay...\nWith...\nMe...\nJust...\nHold...\nThe...\nSilent...\nSea...\n\n[outro-medium]"
-            }}
-        
-        Here is the user's idea:
+                Example Structure:
+                {{
+                    "title": "Short Title",
+                    "tags": "style, mood, BPM",
+                    "lyrics": "[intro-medium]\\nLine one...\\nLine two...\\n[verse]\\nLine three...\\n[chorus]\\nLine four...\\n[outro-short]"
+                }}
 
-        {user_prompt}.
-
-        Give me the json.\n
-        """+"{"
-        },
+                JSON Output:
+                {{
+                        }}
+            """
+        }
     ]
     
     while attempts < max_retries:
@@ -91,7 +79,7 @@ def handler(job):
             raw_content = result[0]["generated_text"][-1]["content"]
 
             # Non-greedy regex to catch the first JSON block
-            match = re.search(r'\{.*?\}', raw_content, re.DOTALL)
+            match = re.search(r"{.*\}", raw_content, re.DOTALL)
             if match:
                 output = json.loads(match.group(0))  # Validate JSON
                 return {"refresh_worker": True, "output": output}
