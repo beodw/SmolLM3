@@ -1,8 +1,6 @@
-fastapi
-uvicorn[standard]
-runpod
-transformers
-accelerate
+runpod==1.6.2
+transformers==4.45.2
+accelerate==0.34.2
 sentencepiece
-huggingface_hub>=0.25.0
+huggingface_hub==0.24.7
 filelock==3.12.2
