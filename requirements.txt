@@ -3,7 +3,6 @@ uvicorn[standard]
 runpod
 transformers
 accelerate
-torch
 sentencepiece
 huggingface_hub>=0.25.0
 filelock==3.12.2
