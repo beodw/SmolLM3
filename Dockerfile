@@ -11,7 +11,7 @@ WORKDIR /
 # 3. Install requirements
 # We install these first to leverage Docker layer caching
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -U -r requirements.txt
 
 # 4. Copy your SmolLM3 handler
 # This contains your handler(job) and the non-greedy regex logic
