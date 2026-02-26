@@ -76,7 +76,8 @@ def handler(job):
             # Non-greedy regex to catch the first JSON block
             match = re.search(r'\{.*?\}', raw_content, re.DOTALL)
             if match:
-                return {"output": match.group(0)}
+                output = json.loads(match.group(0))  # Validate JSON
+                return {"output": output}
             
         except Exception as e:
             print(f"Attempt {attempts+1} failed: {e}")
