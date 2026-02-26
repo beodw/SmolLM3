@@ -5,4 +5,5 @@ transformers
 accelerate
 torch
 sentencepiece
-huggingface_hub
+huggingface_hub>=0.25.0
+filelock==3.12.2
