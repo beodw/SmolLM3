@@ -38,7 +38,7 @@ def init_pipeline():
         model=model_dir, 
         tokenizer=tokenizer, 
         device=device_id,
-        dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
+        torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
     )
     print("✅ Pipeline Initialized")
 
