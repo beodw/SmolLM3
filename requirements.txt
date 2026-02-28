@@ -4,8 +4,7 @@ accelerate==0.34.2
 sentencepiece
 huggingface_hub>=0.30.0
 filelock==3.12.2
-# The "Logic" layer
-pydantic==2.13.0
-outlines==0.1.10
+pydantic
+outlines
 # Essential for Outlines + Transformers
-jinja2>=3.1.0
+jinja2
