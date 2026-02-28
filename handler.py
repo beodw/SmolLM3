@@ -9,7 +9,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 HF_TOKEN = os.environ.get("HF_TOKEN")
 model_id = "HuggingFaceTB/SmolLM3-3B"
-generator = None
+model = None
 
 # Define the schema for deterministic output
 class SongSchema(BaseModel):
@@ -29,24 +29,21 @@ def download_models():
     return model_dir
 
 def init_pipeline():
-    global generator
+    global model
     model_dir = download_models()
     
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    
-    # Outlines needs the model and tokenizer objects
-    model = AutoModelForCausalLM.from_pretrained(
+    # Load raw transformers components
+    raw_model = AutoModelForCausalLM.from_pretrained(
         model_dir, 
         device_map="auto", 
         torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32
     )
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
     
-    # Create the guided generator
-    outlines_model = outlines.models.Transformers(model, tokenizer)
-    generator = outlines.generate.json(outlines_model, SongSchema)
+    # Wrap them in Outlines (The Correct 2026 API)
+    model = outlines.from_transformers(raw_model, tokenizer)
     
-    print("✅ Outlines Generator Initialized")
+    print("✅ Outlines Model Initialized")
 
 def cleanup():
     torch.cuda.empty_cache() 
@@ -58,15 +55,15 @@ def handler(job):
     job_input = job["input"]
     user_prompt = job_input.get("prompt", "A smooth r&b song")
     
-    # We simplify the prompt because the schema handles the structure
+    # The prompt still uses the chat template style for best results
     prompt = f"<|user|>\nGenerate a song idea: {user_prompt}\nRules: Every line in 'lyrics' must end with '...'. Title max 2 words.<|assistant|>\n"
     
     try:
-        # generator() returns a Pydantic object based on SongSchema
-        structured_output = generator(prompt, max_tokens=600, temperature=0.1)
+        # In the new API, we pass the output_type (SongSchema) directly to the model call
+        structured_output = model(prompt, output_type=SongSchema, max_tokens=600, temperature=0.1)
         
         cleanup()
-        # Convert Pydantic object to dict for RunPod return
+        # structured_output is already a Pydantic object
         return {"refresh_worker": False, "output": structured_output.model_dump()}
             
     except Exception as e:
@@ -74,5 +71,6 @@ def handler(job):
         cleanup()
         return {"refresh_worker": False, "error": str(e)}
 
+# Initialize before starting the serverless loop
 init_pipeline()
 runpod.serverless.start({"handler": handler})
