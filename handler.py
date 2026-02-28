@@ -17,12 +17,12 @@ class SongSchema(BaseModel):
     tags: str
     lyrics: str
 
-    @field_validator('title')
-    @classmethod
-    def enforce_title_limit(cls, v):
-        # Street Smart: If the model gives 3+ words, just chop it.
-        words = v.split()
-        return " ".join(words[:2]) if len(words) > 2 else v
+    # @field_validator('title')
+    # @classmethod
+    # def enforce_title_limit(cls, v):
+    #     # Street Smart: If the model gives 3+ words, just chop it.
+    #     words = v.split()
+    #     return " ".join(words[:2]) if len(words) > 2 else v
 
     @field_validator('lyrics')
     @classmethod
@@ -97,7 +97,7 @@ def handler(job):
     STRICT RULES:
     1. STRUCTURE: Use exactly these blocks in order: [intro-short], [verse], [chorus], [outro-short].
     2. LYRICS: Every single line MUST be 2-3 words long and end with '...'. No Exceptions!
-    3. TITLE: Max 2 words. CANNOT include the word Echoe.
+    3. TITLE: MUST be 2 words. CANNOT include the word Echoe.
     4. GENRE: Identify the specific genre (Avoid generic K-pop styles). CANNOT include General.
     5. TAGS: Always starts with vocal either male or female. Include the genre and 3 mood/instrument tags.
 
