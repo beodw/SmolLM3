@@ -98,7 +98,7 @@ def handler(job):
     1. STRUCTURE: Use exactly these blocks in order: [intro-short], [verse], [chorus], [outro-short].
     2. LYRICS: Every single line MUST be 2-3 words long and end with '...'. No Exceptions!
     3. TITLE: MUST be 2 words. CANNOT include the word Echoe.
-    4. GENRE: Identify the specific genre (Avoid generic K-pop styles). CANNOT include General.
+    4. GENRE: Identify the specific genre. CANNOT include the word General.
     5. TAGS: Always starts with vocal either male or female. Include the genre and 3 mood/instrument tags.
 
     Format the response as a JSON object.<|assistant|> 
