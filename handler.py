@@ -99,7 +99,7 @@ def handler(job):
     2. LYRICS: Every single line MUST end with '...'. No Exceptions!
     3. TITLE: Max 2 words. CANNOT include the word Echoe
     4. GENRE: Identify the specific genre (Avoid generic K-pop styles).
-    5. TAGS: Include the genre and 3 mood/instrument tags.
+    5. TAGS: Always starts with vocal either male or female. Include the genre and 3 mood/instrument tags.
 
     Format the response as a JSON object.<|assistant|>
     """    
