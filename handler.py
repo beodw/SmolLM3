@@ -101,7 +101,7 @@ def handler(job):
     4. GENRE: Identify the specific genre (Avoid generic K-pop styles).
     5. TAGS: Always starts with vocal either male or female. Include the genre and 3 mood/instrument tags.
 
-    Format the response as a JSON object.<|assistant|>
+    Format the response as a JSON object.<|assistant|> 
     """    
     try:
         output_data = model(prompt, output_type=SongSchema, max_new_tokens=600, temperature=0.1, do_sample=True, repetition_penalty=1.1)
