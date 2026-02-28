@@ -60,7 +60,7 @@ def handler(job):
     
     try:
         # In the new API, we pass the output_type (SongSchema) directly to the model call
-        structured_output = model(prompt, output_type=SongSchema, max_tokens=600, temperature=0.1)
+        structured_output = model(prompt, output_type=SongSchema, max_new_tokens=600, temperature=0.1)
         
         cleanup()
         # structured_output is already a Pydantic object
