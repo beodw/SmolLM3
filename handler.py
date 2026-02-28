@@ -65,8 +65,18 @@ def handler(job):
     job_input = job["input"]
     user_prompt = job_input.get("prompt", "A smooth r&b song")
     
-    # Updated prompt instructions for the new field
-    prompt = f"<|user|>\nGenerate a song idea: {user_prompt}\nRules: 1. Every line in 'lyrics' must end with '...'. 2. Title max 2 words. 3. Identify the 'genre' and include it in 'tags'.<|assistant|>\n"
+    # Using a Delimited Instruction format for 3B models
+    prompt = f"""<|user|>
+    TASK: Generate a song idea based on this prompt: "{user_prompt}"
+
+    STRICT RULES:
+    1. TITLE: Exactly 1 or 2 words only.
+    2. LYRICS: Every single line MUST end with '...'. No exceptions.
+    3. GENRE: Identify the specific music genre.
+    4. TAGS: List 3-5 descriptive keywords (mood, instruments, voice) AND include the Genre.
+    
+    Format the response as a JSON object.<|assistant|>
+    """
     
     try:
         # Generate structured output string
