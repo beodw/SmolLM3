@@ -3,7 +3,7 @@ import os
 import torch
 import runpod
 import outlines
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from huggingface_hub import hf_hub_download, snapshot_download
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -14,8 +14,18 @@ model = None
 # Define the schema for deterministic output
 class SongSchema(BaseModel):
     title: str
+    genre: str
     tags: str
     lyrics: str
+
+    @field_validator('tags')
+    @classmethod
+    def ensure_genre_in_tags(cls, v, info):
+        # Access the 'genre' field from the validation context
+        genre = info.data.get('genre', '')
+        if genre and genre.lower() not in v.lower():
+            return f"{genre}, {v}"
+        return v
 
 def download_models():
     cache_dir = os.environ.get("HF_HOME", "/tmp")
@@ -55,14 +65,14 @@ def handler(job):
     job_input = job["input"]
     user_prompt = job_input.get("prompt", "A smooth r&b song")
     
-    # Prompt for SmolLM3
-    prompt = f"<|user|>\nGenerate a song idea: {user_prompt}\nRules: Every line in 'lyrics' must end with '...'. Title max 2 words.<|assistant|>\n"
+    # Updated prompt instructions for the new field
+    prompt = f"<|user|>\nGenerate a song idea: {user_prompt}\nRules: 1. Every line in 'lyrics' must end with '...'. 2. Title max 2 words. 3. Identify the 'genre' and include it in 'tags'.<|assistant|>\n"
     
     try:
         # Generate structured output string
         output_data = model(prompt, output_type=SongSchema, max_new_tokens=600, temperature=0.1)
         
-        # 2026 FIX: Use model_validate_json because outlines returned a string
+        # Parse the JSON string into the Pydantic model
         if isinstance(output_data, str):
             structured_output = SongSchema.model_validate_json(output_data)
         else:
