@@ -11,19 +11,33 @@ HF_TOKEN = os.environ.get("HF_TOKEN")
 model_id = "HuggingFaceTB/SmolLM3-3B"
 model = None
 
-# Define the schema for deterministic output
 class SongSchema(BaseModel):
     title: str
     genre: str
     tags: str
     lyrics: str
 
+    @field_validator('title')
+    @classmethod
+    def enforce_title_limit(cls, v):
+        # Street Smart: If the model gives 3+ words, just chop it.
+        words = v.split()
+        return " ".join(words[:2]) if len(words) > 2 else v
+
+    @field_validator('lyrics')
+    @classmethod
+    def enforce_dots(cls, v):
+        # The "Dumb Simple" fix: Ensure every non-empty line ends with '...'
+        lines = [line.strip() for line in v.split('\n') if line.strip()]
+        fixed_lines = [line if line.endswith('...') else f"{line}..." for line in lines]
+        return "\n".join(fixed_lines)
+
     @field_validator('tags')
     @classmethod
     def ensure_genre_in_tags(cls, v, info):
-        # Access the 'genre' field from the validation context
-        genre = info.data.get('genre', '')
-        if genre and genre.lower() not in v.lower():
+        # Guarantee the genre is always the first tag
+        genre = info.data.get('genre', 'Unknown')
+        if genre.lower() not in v.lower():
             return f"{genre}, {v}"
         return v
 
@@ -32,7 +46,6 @@ def download_models():
     model_dir = os.path.join(cache_dir, "SmolLM3")
     if not os.path.exists(model_dir):
         os.makedirs(model_dir, exist_ok=True)
-
     for filename in ["config.json", "tokenizer.json", "tokenizer_config.json"]:
         hf_hub_download(repo_id=model_id, filename=filename, local_dir=model_dir, token=HF_TOKEN)
     snapshot_download(repo_id=model_id, local_dir=model_dir, token=HF_TOKEN)
@@ -41,18 +54,12 @@ def download_models():
 def init_pipeline():
     global model
     model_dir = download_models()
-    
-    # Load raw transformers components
     raw_model = AutoModelForCausalLM.from_pretrained(
-        model_dir, 
-        device_map="auto", 
+        model_dir, device_map="auto", 
         torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32
     )
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
-    
-    # Wrap them in Outlines (The Correct 2026 API)
     model = outlines.from_transformers(raw_model, tokenizer)
-    
     print("✅ Outlines Model Initialized")
 
 def cleanup():
@@ -65,24 +72,13 @@ def handler(job):
     job_input = job["input"]
     user_prompt = job_input.get("prompt", "A smooth r&b song")
     
-    # Using a Delimited Instruction format for 3B models
-    prompt = f"""<|user|>
-    TASK: Generate a song idea based on this prompt: "{user_prompt}"
-
-    STRICT RULES:
-    1. TITLE: Exactly 1 or 2 words only.
-    2. LYRICS: Every single line MUST end with '...'. No exceptions.
-    3. GENRE: Identify the specific music genre.
-    4. TAGS: List 3-5 descriptive keywords (mood, instruments, voice) AND include the Genre.
-    
-    Format the response as a JSON object.<|assistant|>
-    """
+    # We simplified the instructions because the Python validators do the heavy lifting now
+    prompt = f"<|user|>\nGenerate a song: {user_prompt}\nRules: Title max 2 words. Every line ends with '...'.<|assistant|>\n"
     
     try:
-        # Generate structured output string
-        output_data = model(prompt, output_type=SongSchema, max_new_tokens=600, temperature=0.1)
+        output_data = model(prompt, output_type=SongSchema, max_new_tokens=600, temperature=0.3)
         
-        # Parse the JSON string into the Pydantic model
+        # Pydantic 2026 validation logic
         if isinstance(output_data, str):
             structured_output = SongSchema.model_validate_json(output_data)
         else:
@@ -96,6 +92,5 @@ def handler(job):
         cleanup()
         return {"refresh_worker": False, "error": str(e)}
 
-# Initialize before starting the serverless loop
 init_pipeline()
 runpod.serverless.start({"handler": handler})
