@@ -97,7 +97,7 @@ def handler(job):
     STRICT RULES:
     1. STRUCTURE: Use exactly these blocks in order: [intro-short], [verse], [chorus], [outro-short].
     2. LYRICS: Every single line MUST end with '...'. No Exceptions!
-    3. TITLE: Max 2 words.
+    3. TITLE: Max 2 words. CANNOT include the word Echoe
     4. GENRE: Identify the specific genre (Avoid generic K-pop styles).
     5. TAGS: Include the genre and 3 mood/instrument tags.
 
