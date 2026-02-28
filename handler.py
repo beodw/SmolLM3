@@ -76,7 +76,7 @@ def handler(job):
     prompt = f"<|user|>\nGenerate a song: {user_prompt}\nRules: Title max 2 words. Every line ends with '...'.<|assistant|>\n"
     
     try:
-        output_data = model(prompt, output_type=SongSchema, max_new_tokens=600, temperature=0.3)
+        output_data = model(prompt, output_type=SongSchema, max_new_tokens=600, temperature=0.1, do_sample=True, repitition_penalty=1.1)
         
         # Pydantic 2026 validation logic
         if isinstance(output_data, str):
