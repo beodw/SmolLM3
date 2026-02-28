@@ -18,16 +18,13 @@ class SongSchema(BaseModel):
     lyrics: str
 
 def download_models():
-    # Using a clean path in /tmp
     cache_dir = os.environ.get("HF_HOME", "/tmp")
     model_dir = os.path.join(cache_dir, "SmolLM3")
     if not os.path.exists(model_dir):
         os.makedirs(model_dir, exist_ok=True)
 
-    # Use their staggered download strategy
     for filename in ["config.json", "tokenizer.json", "tokenizer_config.json"]:
         hf_hub_download(repo_id=model_id, filename=filename, local_dir=model_dir, token=HF_TOKEN)
-    # Download everything to local_dir
     snapshot_download(repo_id=model_id, local_dir=model_dir, token=HF_TOKEN)
     return model_dir
 
@@ -58,17 +55,18 @@ def handler(job):
     job_input = job["input"]
     user_prompt = job_input.get("prompt", "A smooth r&b song")
     
-    # The prompt still uses the chat template style for best results
+    # Prompt for SmolLM3
     prompt = f"<|user|>\nGenerate a song idea: {user_prompt}\nRules: Every line in 'lyrics' must end with '...'. Title max 2 words.<|assistant|>\n"
     
     try:
-        # Generate structured output. In 2026 API, this returns the validated object.
-        # Fixed: Using max_new_tokens for transformers backend compatibility
-        structured_output = model(prompt, output_type=SongSchema, max_new_tokens=600, temperature=0.1)
+        # Generate structured output string
+        output_data = model(prompt, output_type=SongSchema, max_new_tokens=600, temperature=0.1)
         
-        # Ensure we have the Pydantic object if it returned a string or dict
-        if not hasattr(structured_output, "model_dump"):
-            structured_output = SongSchema.model_validate(structured_output)
+        # 2026 FIX: Use model_validate_json because outlines returned a string
+        if isinstance(output_data, str):
+            structured_output = SongSchema.model_validate_json(output_data)
+        else:
+            structured_output = SongSchema.model_validate(output_data)
 
         cleanup()
         return {"refresh_worker": False, "output": structured_output.model_dump()}
