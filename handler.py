@@ -18,13 +18,16 @@ class SongSchema(BaseModel):
     lyrics: str
 
 def download_models():
+    # Using a clean path in /tmp
     cache_dir = os.environ.get("HF_HOME", "/tmp")
     model_dir = os.path.join(cache_dir, "SmolLM3")
     if not os.path.exists(model_dir):
         os.makedirs(model_dir, exist_ok=True)
 
+    # Use their staggered download strategy
     for filename in ["config.json", "tokenizer.json", "tokenizer_config.json"]:
         hf_hub_download(repo_id=model_id, filename=filename, local_dir=model_dir, token=HF_TOKEN)
+    # Download everything to local_dir
     snapshot_download(repo_id=model_id, local_dir=model_dir, token=HF_TOKEN)
     return model_dir
 
@@ -59,11 +62,15 @@ def handler(job):
     prompt = f"<|user|>\nGenerate a song idea: {user_prompt}\nRules: Every line in 'lyrics' must end with '...'. Title max 2 words.<|assistant|>\n"
     
     try:
-        # In the new API, we pass the output_type (SongSchema) directly to the model call
+        # Generate structured output. In 2026 API, this returns the validated object.
+        # Fixed: Using max_new_tokens for transformers backend compatibility
         structured_output = model(prompt, output_type=SongSchema, max_new_tokens=600, temperature=0.1)
         
+        # Ensure we have the Pydantic object if it returned a string or dict
+        if not hasattr(structured_output, "model_dump"):
+            structured_output = SongSchema.model_validate(structured_output)
+
         cleanup()
-        # structured_output is already a Pydantic object
         return {"refresh_worker": False, "output": structured_output.model_dump()}
             
     except Exception as e:
